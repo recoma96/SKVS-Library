@@ -17,5 +17,5 @@ SKVS Library
   * [Manual](https://gist.github.com/Re-Coma/a0eb1b16731d0ef8357b0391f0eeffc8)
 ### 1. Python
 * 사용 조건 : python 3 이상, google protocol buffer 3.7.0 이상
-* 
+* 구현중
 
