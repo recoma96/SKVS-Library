@@ -5,7 +5,6 @@
 #include <map>
 #include <string>
 
-#include "SkvsCommand.hpp"
 #include "SkvsLibException.hpp"
 
 using namespace std;

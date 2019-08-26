@@ -3,6 +3,7 @@
 
 #include "SkvsConnection.hpp"
 #include "SkvsLibException.hpp"
+#include "SkvsReadStream.hpp"
 #include <string>
 
 using namespace std;
@@ -17,7 +18,7 @@ public:
     explicit SkvsCommand(SkvsConnection* _connection, const string _cmd);
 
     void executeNonQuery(void);
-    //SkvsStream& executeReadStream(void);
+    SkvsReadStream* executeReadStream(void);
 };
 
 

@@ -35,9 +35,9 @@ public:
     SkvsNullptrException(string _errorMsg) : SkvsLibException(_errorMsg) {}
 };
 
-class SkvsCommandFaildException : public SkvsLibException {
+class SkvsCommandFailedException : public SkvsLibException {
 public:
-    SkvsCommandFaildException(string _errorMsg) : SkvsLibException(_errorMsg) {}
+    SkvsCommandFailedException(string _errorMsg) : SkvsLibException(_errorMsg) {}
 };
 
 class SkvsRecvExcept : public SkvsLibException {

@@ -9,8 +9,9 @@ SERIAL=$(shell protoc -I=modules/packet --cpp_out=modules/packet modules/packet/
 PACKET_SRC=$(wildcard modules/packet/*.cpp)
 SOCK_SRC=$(wildcard modules/SockWrapper/*.cpp)
 STRUCTURE_SRC=$(wildcard modules/structure/*.cpp)
+USER_SRC=$(wildcard modules/user/*.cpp)
 
-LIB_SRCS=SkvsConnection.cpp SkvsReadStream.cpp SkvsCommand.cpp
+LIB_SRCS=SkvsConnection.cpp SkvsReadStream.cpp SkvsCommand.cpp SkvsConnection-RecvThread.cpp
 
 TEST_SRC=test.cpp
 SRCS=$(PACKET_SRC) $(SOCK_SRC) $(STRUCTURE_SRC)

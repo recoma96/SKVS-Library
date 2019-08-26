@@ -1,5 +1,6 @@
 #include "SkvsReadStream.hpp"
 #include "SkvsLibException.hpp"
+#include "SkvsCommand.hpp"
 
 #include <vector>
 #include <map>

@@ -4,6 +4,7 @@
 #include "modules/SockWrapper/NetworkingManager.hpp"
 #include "modules/packet/Packet.hpp"
 #include "modules/packet/SerialController.hpp"
+#include "modules/user/User.hpp"
 #include "SkvsLibException.hpp"
 
 #include <string>
@@ -18,6 +19,7 @@
 using namespace std;
 using namespace SockWrapperForCplusplus;
 using namespace PacketSerialData;
+extern void RecvThread(SkvsConnection* conn);
 
 //cmd 시리얼 넘버 계산
 const int SkvsConnection::setCmdSerial(void) {
@@ -90,48 +92,32 @@ void SkvsConnection::open(void) {
         throw SkvsSocketSettingException("Failed to Send Login Data to Server");
 	}
 
-    int shutdownCounter = 0; //서버응답 제한시간
-    //0.1초
-
-    //로그인 허용 어부
+    //데이터 수신
 	bool checkConnect = false;
-    while(true) {
-	    if( recvData(socket, &checkConnect, sizeof(bool), MSG_PEEK | MSG_DONTWAIT ) <= 0) {
-            if(shutdownCounter == 6000)
-                throw SkvsRecvExcept("Failed to recv to Server");
-            this_thread::sleep_for(chrono::milliseconds(10));
-            shutdownCounter++;
-	    } else {
-            break;
-        }
-    }
+	if( recvData(socket, &checkConnect, sizeof(bool)) <= 0) {
+		closeSocket(socket);
+        throw SkvsRecvExcept("Failed to recv to Server");
+	}
 
 	if(checkConnect == false) {
         closeSocket(socket);
         throw SkvsLoginFaildException("Login Denied");
 	}
 
-    //서버에서는 클라이언트에게 UserLevel까지 보내지만 라이브러리에서는 필요 없으므로
-    //4바이트 로 받고 버림
-    int trash;
-    
-    shutdownCounter = 0;
-    while(true) {
-        if( recvData(socket, &trash, sizeof(int), MSG_PEEK | MSG_DONTWAIT) <= 0) {
-
-            if(shutdownCounter == 6000)
-                throw SkvsRecvExcept("Failed to recv to Server");
-            this_thread::sleep_for(chrono::milliseconds(10));
-            shutdownCounter++;
-
-	    } else {
-            break;
-        }
-    }
+	UserLevel userLv;
+	if( recvData(socket, &userLv, sizeof(UserLevel)) <= 0) {
+		closeSocket(socket);
+        throw SkvsRecvExcept("Failed to recv to Server");
+	}
 
     //연결 끝
     this->isConnected = true;
-    this_thread::sleep_for(chrono::milliseconds(10));
+    //recvthread 활성화
+
+    thread recvThread(RecvThread, this);
+    recvThread.detach();
+    this_thread::sleep_for(chrono::milliseconds(1));
+        
 }
 
 void SkvsConnection::close(void) {
@@ -144,7 +130,7 @@ void SkvsConnection::close(void) {
     int cmdSerial = setCmdSerial();
     calSerialMutex.unlock();
 
-    SendCmdPacket sendPacket(ID, socket->getIP(), cmdSerial, 0, "quit");
+    SendCmdPacket sendPacket(ID, socket->getIP(), cmdSerial, cmdSerial, "quit");
 
     char* sendStr = makePacketToCharArray<SendCmdPacket>(sendPacket);
     int sendStrSize = strlen(sendStr);
@@ -153,6 +139,7 @@ void SkvsConnection::close(void) {
     if( sendData(socket, &sendStrSize, sizeof(int)) <= 0) {
         isConnected=false;
         closeSocket(socket);
+        delete sendStr;
         return;
     }
 
@@ -160,75 +147,59 @@ void SkvsConnection::close(void) {
     if( sendData(socket, &sendType, sizeof(PacketType)) <= 0) {
         isConnected=false;
         closeSocket(socket);
+        delete sendStr;
         return;
     }
 
     if( sendData(socket, sendStr, sendStrSize) <= 0) {
         isConnected=false;
         closeSocket(socket);
+        delete sendStr;
         return;
     }
 
     int shutdownCounter = 0;
 
     //종료 패킷 수신
-    int recvBufSize = 0;
-    char* recvBuf = nullptr;
-    int size = 0;
-    //데이터길이
-    while(true) {
-        if( (size = recvData(socket, &recvBufSize, sizeof(int), MSG_PEEK | MSG_DONTWAIT)) <= 0 ) {
-            if(shutdownCounter == 6000) {
-                isConnected = false;
-                closeSocket(socket);
-                return;
-            }
-            this_thread::sleep_for(chrono::milliseconds(10));
-            shutdownCounter++;
-        } else {
-            break;
-        }
-    }
-    PacketType recvPacketType;
 
-    shutdownCounter = 0;
-    //데이터 타입
+    //수신패킷 받을 때 까지 대기
+    //시간안에 못받으면 연결 해제 처리
     while(true) {
-        if( recvData(socket, &recvPacketType, sizeof(PacketType), MSG_PEEK | MSG_DONTWAIT) <= 0 ) {
-            if(shutdownCounter == 6000) {
-                isConnected = false;
+        if(packetQueue.empty()) {
+            if(shutdownCounter == 60000) {
+                isConnected=false;
                 closeSocket(socket);
                 return;
             } else {
-                this_thread::sleep_for(chrono::milliseconds(10));
                 shutdownCounter++;
+                this_thread::sleep_for(chrono::milliseconds(1));
+                continue;
+                
             }
-        } else {
-            break;
-        }
-    }
-
-    //데이터
-    recvBuf = new char[recvBufSize];
-    shutdownCounter = 0;
-    while(true) {
-        if( recvData(socket, recvBuf, recvBufSize, MSG_PEEK | MSG_DONTWAIT) <= 0 ) {
-            if(shutdownCounter == 6000) {
-                isConnected = false;
-                closeSocket(socket);
-                return;
+        } else { //시리얼 넘버 확인
+            if(packetQueue.front()->getCmdNum() == cmdSerial) {
+                break;
             } else {
-                this_thread::sleep_for(chrono::milliseconds(10));
+
                 shutdownCounter++;
+                this_thread::sleep_for(chrono::milliseconds(1));
+                continue;
             }
-        } else {
-            break;
         }
     }
+    
+    //큐에서 패킷을 받고 연결 끊기
+    packetQueueMutex.lock();
+    Packet* endQueue = packetQueue.front();
+    packetQueue.pop();
+    packetQueueMutex.unlock();
+    
+    delete endQueue;
+
     isConnected=false;
     closeSocket(socket);
+    this_thread::sleep_for(chrono::milliseconds(1));
     return;
-    this_thread::sleep_for(chrono::milliseconds(10));
     
 }
 
