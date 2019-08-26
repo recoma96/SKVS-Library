@@ -14,5 +14,6 @@ SKVS Library
   * sudo vim /etc/ld.so.conf를 실행하여 맨 하단에 라이브러리를 저장한 위치를 입력합니다.
   * sudo ldconfig를 실행합니다.
   * 라이브러리를 사용합니다. (사용방법은 Makefile의 make test부분을 참고하세요
+  * [Manual](https://gist.github.com/Re-Coma/a0eb1b16731d0ef8357b0391f0eeffc8)
   
 
