@@ -40,9 +40,9 @@ public:
     SkvsCommandFailedException(string _errorMsg) : SkvsLibException(_errorMsg) {}
 };
 
-class SkvsRecvExcept : public SkvsLibException {
+class SkvsRecvException : public SkvsLibException {
 public:
-    SkvsRecvExcept(string _errorMsg) : SkvsLibException(_errorMsg) { }
+    SkvsRecvException(string _errorMsg) : SkvsLibException(_errorMsg) { }
 };
 
 #endif

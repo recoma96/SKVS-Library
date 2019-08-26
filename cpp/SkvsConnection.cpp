@@ -96,7 +96,7 @@ void SkvsConnection::open(void) {
 	bool checkConnect = false;
 	if( recvData(socket, &checkConnect, sizeof(bool)) <= 0) {
 		closeSocket(socket);
-        throw SkvsRecvExcept("Failed to recv to Server");
+        throw SkvsRecvException("Failed to recv to Server");
 	}
 
 	if(checkConnect == false) {
@@ -107,7 +107,7 @@ void SkvsConnection::open(void) {
 	UserLevel userLv;
 	if( recvData(socket, &userLv, sizeof(UserLevel)) <= 0) {
 		closeSocket(socket);
-        throw SkvsRecvExcept("Failed to recv to Server");
+        throw SkvsRecvException("Failed to recv to Server");
 	}
 
     //연결 끝

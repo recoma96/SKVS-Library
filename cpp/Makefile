@@ -40,7 +40,7 @@ lib: $(SERIAL)
 	g++ -fPIC -c -o modules/packet/PacketSerial.pb.o modules/packet/PacketSerial.pb.cc $(CXXFLAGS) 
 	g++ -fPIC -c $(SRCS) $(CXXFLAGS) 
 	g++ -fPIC -c $(LIB_SRCS) $(CXXFLAGS) 
-	g++ -shared -o $(LIB_TARGET) $(SH_LIB_OBJS) modules/packet/PacketSerial.pb.o
+	g++ -shared -o $(LIB_TARGET) $(SH_LIB_OBJS) modules/packet/PacketSerial.pb.o $(CXXFLAGS)
 	ln -s $(LIB_TARGET) $(LIB_NAME)
 	ln -s $(LIB_TARGET) $(LIB_NONVER_TARGET)
 
@@ -49,6 +49,10 @@ clean_test:
 clean_obj:
 	rm $(SH_LIB_OBJS)
 	rm modules/packet/PacketSerial.pb.*
+clean_lib:
+	rm $(LIB_TARGET)
+	rm $(LIB_NAME)
+	rm $(LIB_NONVER_TARGET)
 
 #make protocol object file
 modules/packet/PacketSerial.pb.o: modules/packet/PacketSerial.pb.cc
