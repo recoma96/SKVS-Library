@@ -49,11 +49,13 @@ class SendCmdPacket(Packet):
         Packet.__init__(self, PacketType.sendCmd , _username, _ip, _cmdNum, _sock)
         
         #cmd 타입 판정
-        if type(_cmd) is not str:
-            raise TypeError("command is not string")
-        
-        #토큰화
-        self.cmdVec = _cmd.split(' ')
+        if type(_cmd) is str:  #str일 경우 토큰화해서 저장
+            self.cmdVec = _cmd.split(' ')
+        elif type(_cmd) is list: #리스트일 경우 나눠서 저장
+            self.cmdVec = []
+            for inputStr in _cmd:
+                self.cmdVec.append(str(inputStr))
+        else: raise TypeError("command is not string")
 
 class RecvPacket(Packet):
     def __init__(self, _username, _ip, _cmdNum, _sock, _recvPacketType):
