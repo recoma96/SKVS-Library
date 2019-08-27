@@ -136,7 +136,9 @@ void SkvsConnection::close(void) {
     int sendStrSize = strlen(sendStr);
 
     //패킷 전송 (데이터 길이, 데이터 타입, 데이터)
+    socketMutex.lock();
     if( sendData(socket, &sendStrSize, sizeof(int)) <= 0) {
+        socketMutex.unlock();
         isConnected=false;
         closeSocket(socket);
         delete sendStr;
@@ -145,6 +147,7 @@ void SkvsConnection::close(void) {
 
     PacketType sendType = sendPacket.getPacketType();
     if( sendData(socket, &sendType, sizeof(PacketType)) <= 0) {
+        socketMutex.unlock();
         isConnected=false;
         closeSocket(socket);
         delete sendStr;
@@ -152,11 +155,13 @@ void SkvsConnection::close(void) {
     }
 
     if( sendData(socket, sendStr, sendStrSize) <= 0) {
+        socketMutex.unlock();
         isConnected=false;
         closeSocket(socket);
         delete sendStr;
         return;
     }
+    socketMutex.unlock();
 
     int shutdownCounter = 0;
 
@@ -177,10 +182,11 @@ void SkvsConnection::close(void) {
                 
             }
         } else { //시리얼 넘버 확인
+            packetQueueMutex.lock();
             if(packetQueue.front()->getCmdNum() == cmdSerial) {
                 break;
             } else {
-
+                packetQueueMutex.unlock();
                 shutdownCounter++;
                 this_thread::sleep_for(chrono::milliseconds(1));
                 continue;
@@ -189,7 +195,7 @@ void SkvsConnection::close(void) {
     }
     
     //큐에서 패킷을 받고 연결 끊기
-    packetQueueMutex.lock();
+
     Packet* endQueue = packetQueue.front();
     packetQueue.pop();
     packetQueueMutex.unlock();
