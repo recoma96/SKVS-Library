@@ -20,7 +20,7 @@ def makePacketSerial(_targetPacket):
         type(_targetPacket) is not pk.RecvMsgPacket and     \
         type(_targetPacket) is not pk.SignalPacket and      \
         type(_targetPacket) is not pk.LogPacket: 
-            TypeError("This type is not type of packret")
+            TypeError("This type is not type of packet")
     
     #serial 만들기
     packetSerial = pb.PacketSerial()

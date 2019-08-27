@@ -4,10 +4,10 @@ class PacketTypeConverter:
     def toType(_integer):
         if type(_integer) != int:
             raise TypeError("This Value is Not integer")
-        if _integer is 0: return pk.PacketType.sendCmd
-        elif _integer is 1: return pk.PacketType.recv
-        elif _integer is 2: return pk.PacketType.signal
-        elif _integer is 3: return pk.PacketType.log
+        if _integer == 0: return pk.PacketType.sendCmd
+        elif _integer == 1: return pk.PacketType.recv
+        elif _integer == 2: return pk.PacketType.signal
+        elif _integer == 3: return pk.PacketType.log
         else: raise ValueError("This integer is out of range")
     
     def toInteger(_type):
@@ -24,8 +24,8 @@ class RecvPacketTypeConverter:
     def toType(_integer):
         if type(_integer) != int:
             raise TypeError("This Value is Not integer")
-        if _integer is 0: return pk.RecvPacketType.data
-        elif _integer is 1: return pk.RecvPacketType.msg
+        if _integer == 0: return pk.RecvPacketType.data
+        elif _integer == 1: return pk.RecvPacketType.msg
         else: raise ValueError("This integer is out of range")
 
     def toInteger(_type):
@@ -40,10 +40,10 @@ class SignalTypeConverter:
     def toType(_integer):
         if type(_integer) != int:
             raise TypeError("This Value is Not integer")
-        if _integer is 0: return pk.SignalType.shutdown
-        elif _integer is 1: return pk.SignalType.recvStart
-        elif _integer is 2: return  pk.SignalType.recvEnd
-        elif _integer is 3: return pk.SignalType.TypeError
+        if _integer == 0: return pk.SignalType.shutdown
+        elif _integer == 1: return pk.SignalType.recvStart
+        elif _integer == 2: return  pk.SignalType.recvEnd
+        elif _integer == 3: return pk.SignalType.TypeError
         else: raise ValueError("This Type is out of range")
 
     def toInteger(_type):

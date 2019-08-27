@@ -1,6 +1,7 @@
-import enum
-import modules.packet.Packet as pk
-import modules.structure.DataElementTypeConverter as dc
-import modules.structure.DataElement as de
-import modules.packet.PacketTypeConverter as pc
-import modules.packet.PacketSerial as ps
+from SkvsClient.SkvsConnection import *
+from time import *
+a = SkvsConnection("user", "12345678", "127.0.0.1", 8000)
+
+while True:
+    a.open()
+    a.close()

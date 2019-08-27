@@ -33,8 +33,8 @@ const int SkvsConnection::setCmdSerial(void) {
 	for( vector<int>::iterator iter = serialList.begin();
 			iter != serialList.end(); iter++ ) {
 
-		if( counter < (*iter))
-            counter = (*iter);
+		if( counter <= (*iter))
+            counter = (*iter)+1;
 	}
 	return counter;    
 }
