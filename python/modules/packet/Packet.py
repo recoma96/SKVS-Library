@@ -60,7 +60,7 @@ class RecvPacket(Packet):
         Packet.__init__(self, PacketType.recv , _username, _ip, _cmdNum, _sock)
         if type(_recvPacketType) is not RecvPacketType:
             raise TypeError("This packetType is not PacketType")
-        self.RecvPacketType = _recvPacketType
+        self.recvPacketType = _recvPacketType
 
 class RecvDataPacket(RecvPacket):
     def __init__(self, _username, _ip, _cmdNum, _sock, _dataElement ):

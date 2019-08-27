@@ -21,6 +21,8 @@ using namespace SockWrapperForCplusplus;
 class SkvsConnection {
 private:
     Socket* socket;
+    mutex socketMutex; //Command에서 사용
+
     string ID;
     string pswd;
     bool isConnected; //close없이 소멸자호출할때 서버에 지장없게 하기 위한 boolean
@@ -42,8 +44,15 @@ public:
     queue<Packet*, deque<Packet*>>& useQueue(void) { return packetQueue; }
     Socket& useSocket(void) { return *socket; }
     mutex& usePacketQueueMutex(void) { return packetQueueMutex; }
+
+    //mutex
+    void lockSocketMutex(void) noexcept { socketMutex.lock();}
+    void unlockSocketMutex(void) noexcept { socketMutex.unlock();}
+    void lockCalMutex(void) noexcept { calSerialMutex.lock(); }
+    void unlockCalMutex(void) noexcept { calSerialMutex.unlock();}
     
 
+    //실제로 사용하는 함수
     void open(void);
     void close(void);
 

@@ -76,18 +76,23 @@ void SkvsCommand::executeNonQuery(void) {
     PacketType sendPacketType = PACKETTYPE_SENDCMD;
 
     //전송
+    connection->lockSocketMutex();
     if(sendData(&(connection->useSocket()), &sendBufSize, sizeof(int)) <= 0) {
+        connection->unlockSocketMutex();
         connection->close();
          SkvsSocketSettingException("Disconnected from server");
     }
     if(sendData(&(connection->useSocket()), &sendPacketType, sizeof(PacketType)) <= 0) {
+        connection->unlockSocketMutex();
         connection->close();
-         SkvsSocketSettingException("Disconnected from server");
+        SkvsSocketSettingException("Disconnected from server");
     }
     if(sendData(&(connection->useSocket()), sendBuf, sendBufSize) <= 0) {
+        connection->unlockSocketMutex();
         connection->close();
-         SkvsSocketSettingException("Disconnected from server");
+        SkvsSocketSettingException("Disconnected from server");
     }
+    connection->unlockSocketMutex();
     delete sendBuf;
 
 
@@ -201,7 +206,9 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
         throw SkvsCommandFailedException("This cmd is empty.");
     
     //Cmd 시리얼 넘버 연산
+    connection->lockCalMutex();
     int serialNum = connection->setCmdSerial();
+    connection->unlockCalMutex();
 
     //패킷 생성
     SendCmdPacket sendPacket(
@@ -217,18 +224,23 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
     PacketType sendPacketType = PACKETTYPE_SENDCMD;
 
     //전송
+    connection->lockSocketMutex();
     if(sendData(&(connection->useSocket()), &sendBufSize, sizeof(int)) <= 0) {
+        connection->unlockSocketMutex();
         connection->close();
-         SkvsSocketSettingException("Disconnected from server");
+        SkvsSocketSettingException("Disconnected from server");
     }
     if(sendData(&(connection->useSocket()), &sendPacketType, sizeof(PacketType)) <= 0) {
         connection->close();
-         SkvsSocketSettingException("Disconnected from server");
+        connection->unlockSocketMutex();
+        SkvsSocketSettingException("Disconnected from server");
     }
     if(sendData(&(connection->useSocket()), sendBuf, sendBufSize) <= 0) {
         connection->close();
-         SkvsSocketSettingException("Disconnected from server");
+        connection->unlockSocketMutex();
+        SkvsSocketSettingException("Disconnected from server");
     }
+    connection->unlockSocketMutex();
     delete sendBuf;
 
 
@@ -292,7 +304,9 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
                             //정상종료
 
                             delete signalPacket;
+                            connection->lockCalMutex();
                             connection->removeSerialNum(serialNum );
+                            connection->unlockCalMutex();
                             return new SkvsReadStream(dataContainer);
                             
                         break;
@@ -300,7 +314,9 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
                         case SIGNALTYPE_ERROR:
                         //명령수행에 있어서 오류 발생
                             delete signalPacket;
+                            connection->lockCalMutex();
                             connection->removeSerialNum(serialNum );
+                            connection->unlockCalMutex();
 
                         //에러메세지가 있으면 송출
                         //없으면 unknown Error
@@ -323,7 +339,9 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
                 break;
                 default:
                     delete recvPacket;
+                    connection->lockCalMutex();
                     connection->removeSerialNum(serialNum );
+                    connection->unlockCalMutex();
                     throw SkvsCommandFailedException("Server send unknown flag");
             }
 
@@ -332,7 +350,9 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
             
         } else { //비어있음
             if(shutdownCounter == 60000) {
+                connection->lockCalMutex();
                 connection->removeSerialNum(serialNum);
+                connection->unlockCalMutex();
                 throw SkvsCommandFailedException("Server does not send Packet to this command");
             } else {
                 shutdownCounter++;
