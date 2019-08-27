@@ -43,7 +43,7 @@ class SignalTypeConverter:
         if _integer == 0: return pk.SignalType.shutdown
         elif _integer == 1: return pk.SignalType.recvStart
         elif _integer == 2: return  pk.SignalType.recvEnd
-        elif _integer == 3: return pk.SignalType.TypeError
+        elif _integer == 3: return pk.SignalType.error
         else: raise ValueError("This Type is out of range")
 
     def toInteger(_type):

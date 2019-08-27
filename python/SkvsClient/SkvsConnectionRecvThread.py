@@ -10,12 +10,6 @@ from socket import *
 from queue import *
 from time import *
 
-import errno
-import fcntl, os
-
-#settimeout(5)
-#timeout as e
-
 def SkvsConnectionRecvThread(_connection):
     
     if type(_connection) is not sk.SkvsConnection:

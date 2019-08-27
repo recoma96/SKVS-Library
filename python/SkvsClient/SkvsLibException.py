@@ -16,3 +16,5 @@ class SkvsLoginFailedException(SkvsLibException):
     pass
 class SkvsProtocolException(SkvsLibException):
     pass
+class SkvsCommandFaildException(SkvsLibException):
+    pass

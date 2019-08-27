@@ -145,20 +145,26 @@ class SkvsConnection:
         sizeToLittle = struct.pack('<L', packetSize)
         typeToLittle = struct.pack('<L', PacketTypeConverter.toInteger(closePacket.packetType))
 
+        #데이터 전송
+        self.sendMutex.acquire()
         if self.socket.send(sizeToLittle) <= 0:
+            self.sendMutex.release()
             self.socket.close()
             self.isConnected = False
             raise SkvsSocketSettingException("Conenct Failed From Server")
 
         if self.socket.send(typeToLittle) <= 0:
+            self.sendMutex.release()
             self.socket.close()
             self.isConnected = False
             raise SkvsSocketSettingException("Conenct Failed From Server")
 
         if self.socket.send(packetBytes) <= 0:
+            self.sendMutex.release()
             self.socket.close()
             self.isConnected = False
             raise SkvsSocketSettingException("Conenct Failed From Server")
+        self.sendMutex.release()
 
         #패킷 큐 탐색
         #10초안에 받지 않으면 close 처리
@@ -197,4 +203,7 @@ class SkvsConnection:
         self.socket.close()
         sleep(0.005)
         return
-    
+
+    #소멸자
+    def __del__(self):
+        self.close()
