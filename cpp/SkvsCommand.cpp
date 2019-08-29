@@ -4,7 +4,7 @@
 #include "modules/SockWrapper/ClientSocketManager.hpp"
 #include "modules/SockWrapper/NetworkingManager.hpp"
 #include "modules/packet/Packet.hpp"
-#include "modules/packet/SerialController.hpp"
+#include "modules/packet/SkvsProtocol.hpp"
 #include "modules/structure/DataElement.hpp"
 #include "modules/structure/TypePrinter.hpp"
 
@@ -21,9 +21,8 @@
 
 using namespace std;
 using namespace SockWrapperForCplusplus;
-using namespace PacketSerialData;
-using namespace google;
 using namespace structure;
+using namespace SkvsProtocol;
 
 
 SkvsCommand::SkvsCommand(SkvsConnection* _connection) {
@@ -71,7 +70,7 @@ void SkvsCommand::executeNonQuery(void) {
         cmd
     );
 
-    char* sendBuf = makePacketToCharArray<SendCmdPacket>(sendPacket);
+    char* sendBuf =  makePacketSerial(&sendPacket);
     int sendBufSize = strlen(sendBuf);
     PacketType sendPacketType = PACKETTYPE_SENDCMD;
 
@@ -210,6 +209,7 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
     int serialNum = connection->setCmdSerial();
     connection->unlockCalMutex();
 
+
     //패킷 생성
     SendCmdPacket sendPacket(
         connection->getID(),
@@ -219,7 +219,7 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
         cmd
     );
 
-    char* sendBuf = makePacketToCharArray<SendCmdPacket>(sendPacket);
+    char* sendBuf =  makePacketSerial(&sendPacket);
     int sendBufSize = strlen(sendBuf);
     PacketType sendPacketType = PACKETTYPE_SENDCMD;
 
@@ -257,11 +257,13 @@ SkvsReadStream* SkvsCommand::executeReadStream(void) {
             connection->useQueue().front()->getCmdNum() == serialNum ) {
             shutdownCounter = 0; //카운터 초기화
             
+
             //패킷 추출
             connection->usePacketQueueMutex().lock();
             recvPacket = connection->useQueue().front();
             connection->useQueue().pop();
             connection->usePacketQueueMutex().unlock();
+
             
             PacketType recvType = recvPacket->getPacketType();
 

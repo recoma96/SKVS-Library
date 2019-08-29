@@ -7,13 +7,12 @@ from SkvsClient.modules.packet.PacketSerial import *
 from SkvsClient.modules.packet.PacketTypeConverter import *
 
 
-a = SkvsConnection("user", "12345678", "127.0.0.1", 8000)
+a = SkvsConnection("user", "12345678", "127.0.0.1", 13403)
 
 a.open()
 
-commander = SkvsCommand(a, "get mylist")
+commander = SkvsCommand(a, "insert")
 try:
-    result = commander.executeReadStream()
+    commander.executeNonQuery()
 except SkvsLibException as e:
-    print(result)
     print(e)

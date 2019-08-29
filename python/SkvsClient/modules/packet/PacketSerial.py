@@ -2,6 +2,7 @@ from . import Packet as pk
 from . import PacketTypeConverter as pc
 from . import PacketSerial_pb2 as pb
 import google
+from google.protobuf import text_format
 
 #상위 폴더를 접근해서 import DataElement
 import os
@@ -193,14 +194,15 @@ def returnToPacket(_targetPacket, _type):
 
         checkTypeSerial = pb.RecvDataPacketSerial()
         try: #에러나면 msg 그렇지 않으면 data
-            
+            print(_targetPacket)
             checkTypeSerial.ParseFromString(_targetPacket)
 
         except google.protobuf.message.DecodeError: #타입이 msg
 
             returnSerial = pb.RecvMsgPacketSerial()
+            print(_targetPacket)
             returnSerial.ParseFromString(_targetPacket) #Msg로 재 파싱
-
+            #text_format.Parse(_targetPacket, returnSerial)
             returnPacket = pk.RecvMsgPacket(                \
                 returnSerial.recvPacket.packet.username,    \
                 returnSerial.recvPacket.packet.IP,          \

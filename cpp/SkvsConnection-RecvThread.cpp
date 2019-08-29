@@ -10,15 +10,18 @@
 
 #include "SkvsConnection.hpp"
 #include "modules/packet/Packet.hpp"
-#include "modules/packet/SerialController.hpp"
+#include "modules/packet/SkvsProtocol.hpp"
 #include "SkvsLibException.hpp"
 #include "modules/SockWrapper/NetworkingManager.hpp"
 
 using namespace std;
 using namespace SockWrapperForCplusplus;
-using namespace PacketSerialData;
+using namespace SkvsProtocol;
+
 
 void RecvThread(SkvsConnection* conn) {
+
+    
     while(conn->getAboutConnected()) { //연결 여부
 
         int recvBufSize = 0;
@@ -36,18 +39,18 @@ void RecvThread(SkvsConnection* conn) {
                 this_thread::sleep_for(chrono::milliseconds(1));
             }
         }
-
         if(recvData(&(conn->useSocket()), &recvType, sizeof(PacketType)) < 0) {
             conn->close();
             return;
         }
 
-        recvBuf = new char[recvBufSize];
+        recvBuf = new char[recvBufSize+1];
 
         if(recvData(&(conn->useSocket()), recvBuf, recvBufSize) < 0) {
             conn->close();
             return;
         }
+        recvBuf[recvBufSize] = '\0';
 
         //패킷 객체 생성
         Packet* savePacket = nullptr;
@@ -55,7 +58,13 @@ void RecvThread(SkvsConnection* conn) {
 
             case PACKETTYPE_RECV:
             {
-                RecvPacketType checkType = whatIsRecvPacketTypeInRecvDataSerial(recvBuf);
+                RecvPacketType checkType;
+                try {
+                    checkType = checkRecvPacketType(recvBuf);
+                } catch(SkvsLibException& e) {
+                    delete[] recvBuf;
+                    continue;
+                }
                 if( checkType == RECVPACKETTYPE_DATA)
                     savePacket = returnToPacket<RecvDataPacket>(recvBuf);
                 else
@@ -69,11 +78,17 @@ void RecvThread(SkvsConnection* conn) {
             }
             break;
             default:
-                cout << "error" << endl;
                 delete[] recvBuf;
                 continue;
         }      
         delete[] recvBuf;
+
+        //cout << savePacket->getCmdNum() << endl;
+        //cout << aa << endl;
+        
+        conn->usePacketQueueMutex().lock();
         conn->useQueue().push(savePacket);
+        conn->usePacketQueueMutex().unlock();
+
     }
 }

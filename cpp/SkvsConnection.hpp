@@ -30,6 +30,8 @@ private:
     mutex calSerialMutex; //cmd시리얼넘버 계산할때 사용
 
     queue<Packet*, deque<Packet*>> packetQueue;
+    mutex packetOutLineMutex; //생산자와 소비자 사이의 를 통제하는 뮤텍스
+    //초기화 할 때 lock으로 설정
     mutex packetQueueMutex;
 public:
     SkvsConnection(const string _ID,
@@ -44,6 +46,7 @@ public:
     queue<Packet*, deque<Packet*>>& useQueue(void) { return packetQueue; }
     Socket& useSocket(void) { return *socket; }
     mutex& usePacketQueueMutex(void) { return packetQueueMutex; }
+    mutex& usePacketOutLineMutex(void) { return packetOutLineMutex; }
 
     //mutex
     void lockSocketMutex(void) noexcept { socketMutex.lock();}

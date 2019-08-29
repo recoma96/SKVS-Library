@@ -3,7 +3,7 @@
 #include "modules/SockWrapper/ClientSocketManager.hpp"
 #include "modules/SockWrapper/NetworkingManager.hpp"
 #include "modules/packet/Packet.hpp"
-#include "modules/packet/SerialController.hpp"
+#include "modules/packet/SkvsProtocol.hpp"
 #include "modules/user/User.hpp"
 #include "SkvsLibException.hpp"
 
@@ -18,7 +18,7 @@
 
 using namespace std;
 using namespace SockWrapperForCplusplus;
-using namespace PacketSerialData;
+using namespace SkvsProtocol;
 extern void RecvThread(SkvsConnection* conn);
 
 //cmd 시리얼 넘버 계산
@@ -27,7 +27,7 @@ const int SkvsConnection::setCmdSerial(void) {
 	int counter = 0;
 
 	if( serialList.empty() ) {
-
+        serialList.push_back(0);
 		return 0;
 	}
 	for( vector<int>::iterator iter = serialList.begin();
@@ -36,6 +36,7 @@ const int SkvsConnection::setCmdSerial(void) {
 		if( counter <= (*iter))
             counter = (*iter)+1;
 	}
+    serialList.push_back(counter);
 	return counter;    
 }
 
@@ -66,6 +67,7 @@ SkvsConnection::SkvsConnection(const string _ID,
     ID = _ID;
     pswd = _pswd;
     isConnected = false;
+    
     
 }
 
@@ -132,7 +134,7 @@ void SkvsConnection::close(void) {
 
     SendCmdPacket sendPacket(ID, socket->getIP(), cmdSerial, cmdSerial, "quit");
 
-    char* sendStr = makePacketToCharArray<SendCmdPacket>(sendPacket);
+    char* sendStr =  makePacketSerial(&sendPacket);
     int sendStrSize = strlen(sendStr);
 
     //패킷 전송 (데이터 길이, 데이터 타입, 데이터)

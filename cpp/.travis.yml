@@ -1,0 +1,16 @@
+dist: bionic
+
+language: cpp
+compiler: gcc
+os: linux
+
+
+branches:
+  only:
+    - master
+
+notification:
+    email: false
+
+script: 
+  - make lib
