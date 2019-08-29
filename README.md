@@ -5,7 +5,7 @@ SKVS Library
 * CENTOS 7.5
 
 ## 라이브러리 사용 방법
-### 1. C++(CPP)
+### 1. C++(CPP) [![Build Status](https://travis-ci.org/Re-Coma/SKVS-Library-CPP.svg?branch=master)](https://travis-ci.org/Re-Coma/SKVS-Library-CPP)
 * 사용 조건 : Only Linux, g++ 7 이상, C++17, google protocol buffer 3.7.0 이상
 * 사용 방법 : 
   * cpp폴더를 다운받습니다.
