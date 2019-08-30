@@ -15,7 +15,7 @@ SKVS Library
   * sudo ldconfig를 실행합니다.
   * 라이브러리를 사용합니다. (사용방법은 Makefile의 make test부분을 참고하세요
   * [Manual](https://gist.github.com/Re-Coma/a0eb1b16731d0ef8357b0391f0eeffc8)
-### 1. Python
+### 1. Python [![Build Status](https://travis-ci.org/Re-Coma/SKVS-Library-Python.svg?branch=master)](https://travis-ci.org/Re-Coma/SKVS-Library-Python)
 * 사용 조건 : python 3 이상, google protocol buffer 3.7.0 이상
 * 구현중
 
