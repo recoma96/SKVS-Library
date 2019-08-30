@@ -3,8 +3,8 @@ import enum
 #상위 폴더를 접근해서 import DataElement
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-import modules.structure.DataElement as de
+#sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
+from .structure.DataElement import *
 
 #enums
 
@@ -67,7 +67,7 @@ class RecvPacket(Packet):
 class RecvDataPacket(RecvPacket):
     def __init__(self, _username, _ip, _cmdNum, _sock, _dataElement ):
         RecvPacket.__init__(self, _username, _ip, _cmdNum, _sock, RecvPacketType.data)
-        if type(_dataElement) is not de.DataElement:
+        if type(_dataElement) is not DataElement:
             raise TypeError("This dataElement type is not DataElement")
         self.data = _dataElement
 

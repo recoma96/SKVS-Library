@@ -2,7 +2,7 @@ from . import SkvsLibException as sl
 from . import SkvsConnection as sk
 
 from .modules.packet.Packet import *
-from .modules.packet.PacketSerial import *
+from .modules.packet.PacketProtocol import *
 from .modules.packet.PacketTypeConverter import *
 
 import threading #mutex 선언을 위한 import
@@ -56,7 +56,6 @@ def SkvsConnectionRecvThread(_connection):
             raise sl.SkvsSocketSettingException("Conenct Failed From Server")
         
         #함수작동 오류로 패킷타입 숫자화
-
         try:
             packetType = PacketTypeConverter.toType(intpacketType)
         except ValueError:
@@ -67,16 +66,21 @@ def SkvsConnectionRecvThread(_connection):
         #문자열 수신
         _connection.socket.settimeout(10)
         try:
-            serializedBytes = _connection.socket.recv(dataSize)
+            serializedStr = _connection.socket.recv(dataSize).decode('utf-8')
         except timeout:
             # close() 함수 실행
             raise sl.SkvsSocketSettingException("Conenct Failed From Server")
 
         #패킷 조합
-        receivedPacket = returnToPacket(serializedBytes, packetType)
+        try:
+            receivedPacket = returnToPacket(serializedStr)
+        except: #잘못된 데이터는 버리기
+            continue
 
         #패킷을 리스트에 집어넣기
+        _connection.packetQueueMutex.acquire()
         _connection.packetQueue.append(receivedPacket)
+        _connection.packetQueueMutex.release()
         continue
 
         

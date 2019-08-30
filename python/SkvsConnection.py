@@ -50,12 +50,15 @@ class SkvsConnection:
 
         #리스트에 아무것도 없으면 첫번호 리턴값 0
         if len(self.serialList) == 0:
+            self.serialList.append(0)
             return 0
 
         #가장 큰 값보다 1 이상의 수 생성
         for cmdNum in self.serialList:
             if counter <= cmdNum:
                 counter = cmdNum+1
+        #리스트에 삽입
+        self.serialList.append(counter)
         return counter
 
     #커맨드 번호 삭제: 성공 시 True, 실패 시 False
@@ -135,7 +138,7 @@ class SkvsConnection:
         closePacket = SendCmdPacket(self.id, self.connectIP, newCmdSerial, newCmdSerial, "quit")
 
         #직렬화
-        packetBytes = makePacketSerialToByte(closePacket)
+        packetBytes = makePacketSerial(closePacket)
         #길이구하기
         packetSize = len(packetBytes)
 
@@ -159,7 +162,7 @@ class SkvsConnection:
             self.isConnected = False
             raise SkvsSocketSettingException("Conenct Failed From Server")
 
-        if self.socket.send(packetBytes) <= 0:
+        if self.socket.send(packetBytes.encode('utf-8')) <= 0:
             self.sendMutex.release()
             self.socket.close()
             self.isConnected = False
@@ -197,8 +200,6 @@ class SkvsConnection:
                     counter += 1
                     continue
         
-        #종료
-        print(popedPacket.signal)
         self.isConnected = False
         self.socket.close()
         sleep(0.005)

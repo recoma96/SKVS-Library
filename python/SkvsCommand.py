@@ -2,7 +2,7 @@ from . import SkvsLibException as sl
 from . import SkvsConnection as sk
 
 from .modules.packet.Packet import *
-from .modules.packet.PacketSerial import *
+from .modules.packet.PacketProtocol import *
 from .modules.packet.PacketTypeConverter import *
 
 from time import *
@@ -50,9 +50,9 @@ class SkvsCommand:
         #패킷 시리얼 생성
         
         #직렬화
-        packetBytes = makePacketSerialToByte(sendPacket)
+        packetStr = makePacketSerial(sendPacket)
         #길이구하기
-        packetSize = len(packetBytes)
+        packetSize = len(packetStr)
 
         #리틀엔디안으로 전환
         sizeToLittle = struct.pack('<L', packetSize)
@@ -66,6 +66,7 @@ class SkvsCommand:
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
@@ -75,15 +76,17 @@ class SkvsCommand:
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
 
-        if self.connection.socket.send(packetBytes) <= 0:
+        if self.connection.socket.send(packetStr.encode('utf-8')) <= 0:
 
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
@@ -138,6 +141,7 @@ class SkvsCommand:
             else: #리스트가 비어있을 경우
                 if counter > 100000: #10초가 지나면
                     #연결이 끊어진 걸로 처리
+                    self.connection.removeCmdSerial(newSerialNum)
                     self.connection.close()
                     raise sl.SkvsSocketSettingError("This server is disconnected")
                 else:
@@ -147,24 +151,29 @@ class SkvsCommand:
 
         #에러 여부 확인하기
         if signal == SignalType.recvEnd:
+            self.connection.removeCmdSerial(newSerialNum)
             return
         elif signal == SignalType.error: #명령 실패
+            self.connection.removeCmdSerial(newSerialNum)
             raise sl.SkvsCommandFaildException(errorMsg)
         elif signal == SignalType.shutdown: #종료
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.close()
             return
-        else: return
+        else:
+            self.connection.removeCmdSerial(newSerialNum) 
+            return
 
 
     def executeReadStream(self):
        #연결 여부 판정
+       
         if self.connection.isConnected == False:
             raise sl.SkvsSocketSettingError("This server is disconnected")
         
         #커맨드 길이 판정
         if len(self.cmd) == 0:
             raise ValueError("command length is zero")
-        
         #시리얼 넘버 연산
         self.connection.calSerialMutex.acquire()
         newSerialNum = self.connection.setCmdSerial()
@@ -181,15 +190,16 @@ class SkvsCommand:
         #패킷 시리얼 생성
         
         #직렬화
-        packetBytes = makePacketSerialToByte(sendPacket)
+        packetStr = makePacketSerial(sendPacket)
         #길이구하기
-        packetSize = len(packetBytes)
+        packetSize = len(packetStr)
 
         #리틀엔디안으로 전환
         sizeToLittle = struct.pack('<L', packetSize)
         typeToLittle = struct.pack('<L', PacketTypeConverter.toInteger(sendPacket.packetType))
 
         #데이터 전송
+        
         self.connection.sendMutex.acquire()
 
         if self.connection.socket.send(sizeToLittle) <= 0:
@@ -197,6 +207,7 @@ class SkvsCommand:
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
@@ -206,15 +217,17 @@ class SkvsCommand:
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
 
-        if self.connection.socket.send(packetBytes) <= 0:
+        if self.connection.socket.send(packetStr.encode('utf-8')) <= 0:
 
             self.connection.sendMutex.release()
 
             self.connection.socket.close()
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.isConnected = False
 
             raise SkvsSocketSettingException("Conenct Failed From Server")
@@ -236,6 +249,7 @@ class SkvsCommand:
                 self.connection.packetQueueMutex.acquire()
                 if self.connection.packetQueue[0].cmdNum == newSerialNum:
                     
+                    
                     counter = 0
 
                     popedPacket = self.connection.packetQueue[0]
@@ -249,7 +263,7 @@ class SkvsCommand:
                         continue
                     elif type(popedPacket) is RecvDataPacket:
                         dataDic = {'data':popedPacket.data.data}
-                        dataDic['structtype'] = popedPacket.data.structtype
+                        dataDic['structtype'] = popedPacket.data.structType
                         dataContainer.append(dataDic)
                         del popedPacket
                         continue
@@ -273,6 +287,7 @@ class SkvsCommand:
             else: #리스트가 비어있을 경우
                 if counter > 100000: #10초가 지나면
                     #연결이 끊어진 걸로 처리
+                    self.connection.removeCmdSerial(newSerialNum)
                     self.connection.close()
                     raise sl.SkvsSocketSettingError("This server is disconnected")
                 else:
@@ -282,11 +297,15 @@ class SkvsCommand:
 
         #에러 여부 확인하기
         if signal == SignalType.recvEnd:
+            self.connection.removeCmdSerial(newSerialNum)
             return dataContainer
         elif signal == SignalType.error: #명령 실패
+            self.connection.removeCmdSerial(newSerialNum)
             raise sl.SkvsCommandFaildException(errorMsg)
         elif signal == SignalType.shutdown: #종료
+            self.connection.removeCmdSerial(newSerialNum)
             self.connection.close()
             raise sl.SkvsSocketSettingError("This server is disconnected")
         else:
+            self.connection.removeCmdSerial(newSerialNum)
             raise sl.SkvsLibException("unknown error")

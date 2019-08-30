@@ -44,7 +44,7 @@ class DataElement:
     def __eq__(self, other):
         if type(other) != DataElement:
             return False
-        if self.data == other.data:
+        if self.data == other.data and self.dataType == other.dataType:
             return True
         else:
             return False
