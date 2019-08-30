@@ -37,7 +37,7 @@ def SkvsConnectionRecvThread(_connection):
             else: #데이터를 받음
                 #dataSize가 0 == 서버와의 연결이 끊김
                 if len(dataSize) == 0:
-                    # close() 함수 실행
+                    _connection.close()
                     raise sl.SkvsSocketSettingException("Conenct Failed From Server")
                 #데이터 int로 형변환
                 dataSize = int.from_bytes(dataSize, 'little')
@@ -52,14 +52,14 @@ def SkvsConnectionRecvThread(_connection):
             bytePacketType = _connection.socket.recv(4)
             intpacketType = int.from_bytes(bytePacketType, 'little')
         except timeout:
-            # close() 함수 실행
+            _connection.close()
             raise sl.SkvsSocketSettingException("Conenct Failed From Server")
         
         #함수작동 오류로 패킷타입 숫자화
         try:
             packetType = PacketTypeConverter.toType(intpacketType)
         except ValueError:
-            #close() 함수 실행
+            _connection.close()
             raise sl.SkvsProtocolException("Invaild packet type from server")
             
 
@@ -68,7 +68,7 @@ def SkvsConnectionRecvThread(_connection):
         try:
             serializedStr = _connection.socket.recv(dataSize).decode('utf-8')
         except timeout:
-            # close() 함수 실행
+            _connection.close()
             raise sl.SkvsSocketSettingException("Conenct Failed From Server")
 
         #패킷 조합
