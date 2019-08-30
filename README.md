@@ -19,3 +19,4 @@ SKVS Library
 * 사용 조건 : python 3 이상
 * python 폴더를 다운받습니다.
 * 파이썬은 인터프리터 언어이므로 바로 사용 가능합니다.
+* [Manual](https://gist.github.com/Re-Coma/811a90c2da3444b90c6686ea4bc0f2a6)
