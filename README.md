@@ -21,7 +21,7 @@ SKVS Library
 * 파이썬은 인터프리터 언어이므로 바로 사용 가능합니다.
 * [Manual](https://gist.github.com/Re-Coma/811a90c2da3444b90c6686ea4bc0f2a6)
 
-### 3.Java
+### 3. Java [![Build Status](https://travis-ci.org/Re-Coma/SKVS-Library-Java.svg?branch=master)](https://travis-ci.org/Re-Coma/SKVS-Library-Java)
 * 사용 조건 openjdk8
 * Release에서 jar 파일을 다운받아서 사용하시면 됩니다.
 * 미숙한 자바 소켓 프로그래밍 문제로 싱글스레드에서만 사용 가능합니다. 
