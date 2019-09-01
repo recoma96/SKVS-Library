@@ -1,0 +1,13 @@
+dist: xenial
+language: java
+addons:
+  apt:
+    packages:
+      - ant
+
+jdk:
+  - openjdk8
+
+script: 
+  - cd SkvsClient
+  - ant build
